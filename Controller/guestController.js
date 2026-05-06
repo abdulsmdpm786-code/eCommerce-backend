@@ -81,15 +81,19 @@ const getProfile = async (req, res) => {
   try {
     console.log("In getProfile section");
 
-    const user = await userModel.findOne({ email: "fathimanoor02@gmail.com" });
-    console.log(user);
+    console.log("this req.user", req.user);
+    
+    const user = await userModel.findById(req.user).select('-password')
+    console.log("this is user",user);
 
     if (!user) {
       return res.status(404).json({ errMsg: "Profile not found" });
     }
 
     return res.status(200).json({ user: user, errMsg: "Profile found" });
-  } catch (error) {}
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 export { firstMessage, handleSignUp, handleLogin, getProfile };
