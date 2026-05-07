@@ -13,7 +13,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://ecommerce-backend-xcfh.onrender.com",
   }),
 );
 app.use(express.urlencoded({ extended: true }));
