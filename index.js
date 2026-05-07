@@ -13,7 +13,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "https://ecommerce-backend-xcfh.onrender.com",
+    origin: "https://e-commerce-one-pi-70.vercel.app/",
   }),
 );
 app.use(express.urlencoded({ extended: true }));
