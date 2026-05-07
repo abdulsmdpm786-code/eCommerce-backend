@@ -96,4 +96,79 @@ const getProfile = async (req, res) => {
   }
 };
 
-export { firstMessage, handleSignUp, handleLogin, getProfile };
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find({}).select('-password');
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const addUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    
+    if (!name || !email || !password) {
+      return res.status(400).json({ errMsg: "Name, email, and password are required" });
+    }
+
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ errMsg: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role === "admin" ? "admin" : "user";
+
+    const newUser = await userModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: userRole,
+    });
+
+    res.status(201).json({ message: "User created successfully", user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role } });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role, password } = req.body;
+
+    const user = await userModel.findById(id);
+    if (!user) {
+      return res.status(404).json({ errMsg: "User not found" });
+    }
+
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role && (role === "user" || role === "admin")) user.role = role;
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+    res.status(200).json({ message: "User updated successfully", user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await userModel.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ errMsg: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export { firstMessage, handleSignUp, handleLogin, getProfile, getAllUsers, addUser, updateUser, deleteUser };
